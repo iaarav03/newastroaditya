@@ -33,6 +33,20 @@ export default function ConsultAstro() {
   // 1) Get the astrologer ID from the URL
   const { id } = useParams();
 
+  // Normalize id in case it's an array
+  const astrologerId = Array.isArray(id) ? id[0] : id;
+
+  // Early return if no astrologerId is provided
+  if (!astrologerId) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-sacred-chandan via-white to-sacred-haldi/10">
+        <div className="text-sacred-rudraksha text-xl">
+          No astrologer id provided.
+        </div>
+      </div>
+    );
+  }
+
   // 2) Access current user & loading state from your auth hook
   const { user, loading } = useAuth();
 
@@ -48,13 +62,13 @@ export default function ConsultAstro() {
   useEffect(() => {
     // A. Fetch single astrologer via /api/astrologers/:id
     const fetchAstrologerDetails = async () => {
-      if (!user || !id) return;
+      if (!user || !astrologerId) return;
       setIsLoadingAstrologer(true);
 
       try {
         const token = localStorage.getItem('token');
         const response = await fetch(
-          `http://localhost:3001/api/astrologers/${id}`, // IMPORTANT: Matches your backend route
+          `http://localhost:3001/api/astrologers/${astrologerId}`, // IMPORTANT: Matches your backend route
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -83,13 +97,13 @@ export default function ConsultAstro() {
 
     // B. Fetch chat history via /api/chat/get-messages/:roomId
     const fetchChatHistory = async () => {
-      if (!user || !id) return;
+      if (!user || !astrologerId) return;
       setIsLoadingHistory(true);
 
       try {
         const token = localStorage.getItem('token');
         // The same roomId logic used by your `useChat` hook
-        const roomId = [user._id.trim(), id.trim()].sort().join('_');
+        const roomId = [user._id.trim(), astrologerId.trim()].sort().join('_');
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/chat/get-messages/${roomId}`,
@@ -135,12 +149,12 @@ export default function ConsultAstro() {
       }
     };
 
-    // Only fetch if logged in & we have `id`
-    if (user && id) {
+    // Only fetch if logged in & we have `astrologerId`
+    if (user && astrologerId) {
       fetchAstrologerDetails();
       fetchChatHistory();
     }
-  }, [user, id]);
+  }, [user, astrologerId]);
 
   // 5) Loading & Auth Checks
   if (loading) {
@@ -169,7 +183,7 @@ export default function ConsultAstro() {
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-sacred-chandan via-white to-sacred-haldi/10">
         <div className="bg-white/70 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-sacred-haldi/20">
           <h2 className="text-2xl font-bold text-sacred-kumkum mb-4">
-            ॥ Sacred Connection Required ॥
+            ॥ Sacred Connection Required ॥ 
           </h2>
           <p className="text-sacred-rudraksha/80">
             Please login to begin your spiritual journey
@@ -205,12 +219,10 @@ export default function ConsultAstro() {
             className="relative inline-block mb-6"
           >
             <div
-              className="relative bg-white/80 backdrop-blur-sm rounded-full px-6 py-2 border-2 border-sacred-haldi/20
-                          shadow-[0_0_15px_rgba(255,75,43,0.2)]"
+              className="relative bg-white/80 backdrop-blur-sm rounded-full px-6 py-2 border-2 border-sacred-haldi/20 shadow-[0_0_15px_rgba(255,75,43,0.2)]"
             >
               <span
-                className="text-lg bg-gradient-to-r from-sacred-kumkum via-sacred-haldi to-sacred-tilak
-                             bg-clip-text text-transparent font-semibold"
+                className="text-lg bg-gradient-to-r from-sacred-kumkum via-sacred-haldi to-sacred-tilak bg-clip-text text-transparent font-semibold"
               >
                 ॥ पूर्व परामर्श ॥
               </span>
@@ -229,8 +241,7 @@ export default function ConsultAstro() {
                     key={session.sessionId}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/70 backdrop-blur-md rounded-xl p-6 shadow-md border border-sacred-haldi/10
-                           hover:shadow-sacred-kumkum/10 transition-shadow duration-300"
+                    className="bg-white/70 backdrop-blur-md rounded-xl p-6 shadow-md border border-sacred-haldi/10 hover:shadow-sacred-kumkum/10 transition-shadow duration-300"
                   >
                     <div className="space-y-3">
                       {session.messages.map((msg) => (
@@ -278,8 +289,7 @@ export default function ConsultAstro() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-sacred-haldi/20
-                   hover:shadow-sacred-kumkum/10 transition-shadow duration-300"
+          className="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-sacred-haldi/20 hover:shadow-sacred-kumkum/10 transition-shadow duration-300"
         >
           <div className="mb-4">
             <h2 className="text-xl font-bold text-sacred-kumkum flex items-center gap-2">
@@ -288,9 +298,9 @@ export default function ConsultAstro() {
             </h2>
           </div>
           {/* Render the real-time Chat component */}
-          <Chat 
-            astrologerId={id} 
-            astrologerName={astrologer?.name || 'Astrologer'} 
+          <Chat
+            astrologerId={astrologerId}
+            astrologerName={astrologer?.name || 'Astrologer'}
           />
         </motion.div>
       </div>
